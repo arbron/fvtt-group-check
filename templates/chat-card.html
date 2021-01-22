@@ -1,0 +1,20 @@
+<div class="chat-card group-check-card">
+  <header class="card-header">
+    <h3 class="check-name">{{title}}</h3>
+    {{#if dc}}
+      <h4 class="check-dc">Target DC: <strong>{{dc}}</strong></h4>
+    {{/if}}
+  </header>
+  <div class="card-content">
+    {{#if description}}
+      {{checkDescription}}
+    {{/if}}
+  </div>
+  <hr>
+  <div>
+    <h4>Results</h4>
+    {{#if show_average}}
+      Average: {{formattedAverage}}
+    {{/if}}
+  </div>
+</div>

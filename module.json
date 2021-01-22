@@ -4,11 +4,13 @@
   "description": "Request a group skill check from the player and keep track of the results in one chat bubble.",
   "author": "Jeff 'Arbron' Hitchcock",
   "authors": [
-    "name": "Jeff 'Arbron' Hitchcock",
-    "url": "https://moviemaps.org",
-    "email": "jeff@szed.co",
-    "discord": "arbron#6515",
-    "twitter": "@arbron"
+    {
+      "name": "Jeff 'Arbron' Hitchcock",
+      "url": "https://moviemaps.org",
+      "email": "jeff@szed.co",
+      "discord": "arbron#6515",
+      "twitter": "@arbron"
+    }
   ],
   "url": "",
   "manifest": "",
@@ -17,10 +19,10 @@
   "minimumCoreVersion": "0.7.0",
   "compatibleCoreVersion": "0.7.9",
   "manifestPlusVersion": "1.0.0",
-  "scripts": [
-    
+  "esmodules": [
+    "./scripts/main.js"
   ],
   "styles": [
-    "styles/spreadsheet.css"
+    "./styles/spreadsheet.css"
   ]
 }
