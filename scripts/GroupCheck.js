@@ -13,8 +13,8 @@ import { log } from './shared/messages.js';
  */
 
 const check_source = [
-  { "name": "acr", "label": "Acrobatics", "type": "skill" },
-  { "name": "ani", "label": "Animal Handling", "type": "skill" }
+  { "name": "acr", "label": "Acrobatics", "type": "skill", "localization": "DND5E.SkillAcr" },
+  { "name": "ani", "label": "Animal Handling", "type": "skill", "localization": "DND5E.SkillAni" }
 ];
 
 class GroupCheckData {

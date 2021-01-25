@@ -1,25 +1,27 @@
 <div class="group-check chat-card">
   <header class="card-header">
-    <h3 class="check-name">{{title}}</h3>
+    <h3 class="check-name">{{ title }}</h3>
     {{#if dc}}
-      <h4 class="check-dc">Target DC: <strong>{{dc}}</strong></h4>
+      <h4 class="check-dc">{{ localize "GroupCheck.TargetDC" }} <strong>{{ dc }}</strong></h4>
     {{/if}}
   </header>
   <div class="card-content">
     {{#if description}}
-      {{checkDescription}}
+      {{ checkDescription }}
     {{/if}}
   </div>
   <hr>
   <div class="card-buttons">
     {{#each checks as |check|}}
-      <button data-action="{{check.type}}.{{check.name}}">{{check.label}}</button>
+      <button data-action="{{ check.type }}.{{ check.name }}">
+        {{ localize check.localization }}
+      </button>
     {{/each}}
   </div>
   <div>
-    <h4>Results</h4>
+    <h4>{{ localize "GroupCheck.Results" }}</h4>
     {{#if show_average}}
-      Average: {{formattedAverage}}
+      {{ localize "GroupCheck.Average" }} {{ formattedAverage }}
     {{/if}}
   </div>
 </div>
