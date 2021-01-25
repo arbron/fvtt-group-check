@@ -1,4 +1,4 @@
-<div class="chat-card group-check-card">
+<div class="group-check chat-card">
   <header class="card-header">
     <h3 class="check-name">{{title}}</h3>
     {{#if dc}}
@@ -11,6 +11,11 @@
     {{/if}}
   </div>
   <hr>
+  <div class="card-buttons">
+    {{#each checks as |check|}}
+      <button data-action="{{check.type}}.{{check.name}}">{{check.label}}</button>
+    {{/each}}
+  </div>
   <div>
     <h4>Results</h4>
     {{#if show_average}}

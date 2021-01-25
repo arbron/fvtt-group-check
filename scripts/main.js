@@ -1,14 +1,14 @@
-// import constants from './shared/constants.js';
+import constants from './shared/constants.js';
 import { log } from './shared/messages.js';
 // import registerSettings from './settings.js';
 import GroupCheckCommand from './GroupCheckCommand.js';
 
-// const preloadTemplates = () => {
-//   const templatePaths = [
-//     `${constants.templateRoot}/chat-card.html`,
-//   ];
-//   return loadTemplates(templatePaths);
-// };
+const preloadTemplates = () => {
+  const templatePaths = [
+    `${constants.templateRoot}/chat-card.html`,
+  ];
+  return loadTemplates(templatePaths);
+};
 
 Hooks.on('init', () => {
   log('Initializing the Group Checks module');
@@ -16,15 +16,15 @@ Hooks.on('init', () => {
   GroupCheckCommand.registerCommand();
 
   // registerSettings();
-  // preloadTemplates();
+  preloadTemplates();
 });
 
 Hooks.on('setup', () => {
-  log('Setup');
+  log('setup');
 });
 
 Hooks.on('ready', () => {
-  log('Ready');
+  log('ready');
 });
 
 // Hooks.on('renderChatLog', () => {

@@ -1,4 +1,5 @@
 import constants from './shared/constants.js';
+import { log } from './shared/messages.js';
 
 /*
  * GroupCheck.data
@@ -11,16 +12,23 @@ import constants from './shared/constants.js';
  * results: [GroupCheckResult] - Array of results from players.
  */
 
+const check_source = [
+  { "name": "acr", "label": "Acrobatics", "type": "skill" },
+  { "name": "ani", "label": "Animal Handling", "type": "skill" }
+];
+
 class GroupCheckData {
   constructor(data) {
     this.title = data.title;
     this.description = data.description;
-    this.checks = data.checks;
+
+    this.checks = check_source.filter(check => data.checks.includes(check.name));
+    // TODO: Throw an error if any invalid types are provided.
+
     this.dc = data.dc;
-
-    // TODO: Validate checks against current system.
-
     this.results = [];
+
+    GroupCheckData._log_creation(this.checks);
   }
 
   average() {
@@ -39,7 +47,19 @@ class GroupCheckData {
       return average;
     }
   }
+
+  static _log_creation(checks) {
+    let check_string = checks.map(check => check.label).join(', ');
+    log(`Created Group Check for: ${check_string}`);
+  }
 }
+
+/*
+ * When a roll button is clicked:
+ * 1. Identify selected tokens
+ * 2. Roll check for each selected token within the current system
+ * 3. Update results[] with new rolls
+ */
 
 export default class GroupCheck extends ChatMessage {
   static async create(data, options={}) {

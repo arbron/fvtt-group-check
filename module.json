@@ -12,9 +12,12 @@
       "twitter": "@arbron"
     }
   ],
-  "url": "",
-  "manifest": "",
+  "url": "https://github.com/arbron/fvtt-group-check",
+  "manifest": "https://raw.githubusercontent.com/arbron/fvtt-group-check/main/module.json",
   "download": "",
+  "readme": "",
+  "changelog": "",
+  "bugs": "https://github.com/arbron/fvtt-group-check/issues",
   "version": "0.0.1",
   "minimumCoreVersion": "0.7.0",
   "compatibleCoreVersion": "0.7.9",
@@ -23,6 +26,6 @@
     "./scripts/main.js"
   ],
   "styles": [
-    "./styles/spreadsheet.css"
+    "./styles/stylesheet.css"
   ]
 }
