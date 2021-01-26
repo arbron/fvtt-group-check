@@ -1,11 +1,8 @@
 .group-check button {
   background: rgba(0, 0, 0, 0.1);
   border: 2px groove #eeede0;
-}
-
-.group-check.chat-card .card-buttons button {
   font-size: 12px;
   height: 24px;
   line-height: 20px;
   margin: 2px 0;
-};
+}

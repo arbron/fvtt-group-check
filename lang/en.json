@@ -3,5 +3,7 @@
 
   "GroupCheck.Average": "Average: ",
   "GroupCheck.Results": "Results",
-  "GroupCheck.TargetDC": "Target DC:"
+  "GroupCheck.TargetDC": "Target DC:",
+
+  "GroupCheck.DND5E.ActionSkil": "Skill Check"
 }

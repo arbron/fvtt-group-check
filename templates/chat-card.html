@@ -1,4 +1,4 @@
-<div class="group-check chat-card">
+<div class="group-check-card chat-card">
   <header class="card-header">
     <h3 class="check-name">{{ title }}</h3>
     {{#if dc}}
@@ -11,7 +11,7 @@
     {{/if}}
   </div>
   <hr>
-  <div class="card-buttons">
+  <div class="group-check-buttons">
     {{#each checks as |check|}}
       <button data-action="{{ check.type }}.{{ check.name }}">
         {{ localize check.localization }}

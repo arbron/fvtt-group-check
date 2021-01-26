@@ -75,13 +75,53 @@ export default class GroupCheck extends ChatMessage {
     await messageEntity.setFlag(constants.moduleName, 'groupCheckData', data);
 
     return messageEntity;
-  };
+  }
 
   static async renderGroupCheck(chatMessage, html, listeners = true) {
-    
-  };
+    $(html).addClass('group-check');
+    let data = chatMessage.getFlag(constants.moduleName, 'groupCheckData');
+    if (!data) return;
 
-  static async rollCheck(id, ability, user) {
-    
-  };
+    // Update data with new results
+
+    let updatedHtml = await renderTemplate(`${constants.templateRoot}/chat-card.html`, data);
+    $(html).find('.group-check-card').html(updatedHtml);
+
+    chatListeners(html);
+  }
+
+  static async rollCheck(id, action, actor) {
+    log(`Rolling ${action} for <<actor>>`);
+    let [type, code] = action.split('.');
+    actor.rollSkill(code);
+  }
+
+  static async _onButtonClick(event) {
+    event.preventDefault();
+
+    const button = event.currentTarget;
+    const action = button.dataset.action;
+    const { messageId } = button.closest('.message').dataset;
+    // const userId = game.user._id;
+
+    log(`Button clicked with action ${action}`);
+
+    let actors = GroupCheck._getTargetedActors();
+    for (let actor of actors) {
+      GroupCheck.rollCheck(messageId, action, actor);
+    }
+
+    button.disabled = false;
+  }
+
+  static _getTargetedActors() {
+    // Fake code
+    let actors = [];
+    actors.push(game.user.character);
+    return actors;
+  }
+};
+
+export function chatListeners(html) {
+  html.on('click', '.group-check-buttons button', GroupCheck._onButtonClick);
 };
