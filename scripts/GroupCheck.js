@@ -1,6 +1,10 @@
 import constants from './shared/constants.js';
 import { log } from './shared/messages.js';
 
+// Generic Check Types:
+// - Formula: DM enters roll formula that is rolled for each player
+// - Manual: Players can enter a result manually
+
 /*
  * GroupCheck.data
  *
@@ -77,6 +81,11 @@ export default class GroupCheck extends ChatMessage {
     return messageEntity;
   }
 
+  static getForId(id) {
+    let message = game.messages.get(id);
+    return message;
+  }
+
   static async renderGroupCheck(chatMessage, html, listeners = true) {
     $(html).addClass('group-check');
     let data = chatMessage.getFlag(constants.moduleName, 'groupCheckData');
@@ -90,10 +99,10 @@ export default class GroupCheck extends ChatMessage {
     chatListeners(html);
   }
 
-  static async rollCheck(id, action, actor) {
-    log(`Rolling ${action} for <<actor>>`);
+  static async rollCheck(action, actor) {
+    log(`Rolling ${action} for ${actor.name}`);
     let [type, code] = action.split('.');
-    actor.rollSkill(code);
+    return actor.rollSkill(code, {chatMessage: false});
   }
 
   static async _onButtonClick(event) {
@@ -101,21 +110,38 @@ export default class GroupCheck extends ChatMessage {
 
     const button = event.currentTarget;
     const action = button.dataset.action;
-    const { messageId } = button.closest('.message').dataset;
+    const chatMessage = GroupCheck.getForId(
+      button.closest('.message').dataset.messageId
+    );
     // const userId = game.user._id;
 
     log(`Button clicked with action ${action}`);
 
-    let actors = GroupCheck._getTargetedActors();
-    for (let actor of actors) {
-      GroupCheck.rollCheck(messageId, action, actor);
-    }
+    const actors = GroupCheck._getTargetedActors();
+    const roll = await GroupCheck.rollCheck(action, actors[0]);
+    log(`Roll: ${roll.results} = ${roll.total}`);
+
+    // const rollResults = Promise.allSettled(
+    //   GroupCheck._getTargetedActors().map(actor => {
+    //     GroupCheck.rollCheck(messageId, action, actor)
+    //   })
+    // ).then(value => {
+    //   GroupCheck._updateCardWithRolls(null, value);
+    // });
 
     button.disabled = false;
   }
 
+  static async _updateCardWithRolls(node, rolls) {
+    for (let roll of rolls) {
+      log(`Roll: ${roll.value}`);
+    }
+  };
+
   static _getTargetedActors() {
-    // Fake code
+    // Retrieve actors for all selected tokens
+    // If no tokens are selected, retrieve user's default actor
+    // If still no actors, throw an error
     let actors = [];
     actors.push(game.user.character);
     return actors;
