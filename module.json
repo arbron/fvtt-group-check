@@ -1,6 +1,6 @@
 {
-  "name": "group-check",
-  "title": "Group Check",
+  "name": "arbron-group-check",
+  "title": "Arbron's Group Check",
   "description": "Request a group skill check from the player and keep track of the results in one chat bubble.",
   "author": "Jeff 'Arbron' Hitchcock",
   "authors": [

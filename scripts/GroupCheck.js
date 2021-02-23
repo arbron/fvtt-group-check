@@ -13,7 +13,7 @@ import { log } from './shared/messages.js';
  * checks: [string]     - Valid ability checks for players to perform.
  * dc: Number?          - DC to compare each check against.
  *
- * results: [GroupCheckResult] - Array of results from players.
+ * results: [Actor:Roll] - Map of results for each actor.
  */
 
 const check_source = [
@@ -21,18 +21,41 @@ const check_source = [
   { "name": "ani", "label": "Animal Handling", "type": "skill", "localization": "DND5E.SkillAni" }
 ];
 
-class GroupCheckData {
-  constructor(data) {
+const IS_GROUP_CHECK_FLAG = 'isGroupCheck';
+const DATA_FLAG = 'data';
+
+class GroupCheck {
+  constructor(data, recreate=false) {
     this.title = data.title;
     this.description = data.description;
-
-    this.checks = check_source.filter(check => data.checks.includes(check.name));
-    // TODO: Throw an error if any invalid types are provided.
-
     this.dc = data.dc;
-    this.results = [];
+    this.checks = data.checks ?? [];
+    this.results = data.results ?? {};
 
-    GroupCheckData._log_creation(this.checks);
+    // if (recreate) {
+    //   this.checks = data.checks;
+    //   if (data.results) {
+    //     for (let [actorId, result] of Object.entries(data.results)) {
+    //       this.results[actorId] = GroupCheckResult.recreate(result);
+    //     }
+    //   }
+    // } else {
+    //   this.checks = check_source.filter(check => data.checks.includes(check.name));
+    //   // TODO: Throw an error if any invalid types are provided.
+    //   GroupCheck._log_creation(this.checks);
+    // }
+  }
+
+  static create(data) {
+    data.checks = check_source.filter(check => data.check_codes.includes(check.name));
+    GroupCheck._log_creation(data.checks);
+    return new GroupCheck(data);
+  }
+
+  static fromMessage(message) {
+    let data = message.getFlag(constants.moduleName, DATA_FLAG);
+    if (!data) return;
+    return new GroupCheck(data);
   }
 
   average() {
@@ -58,6 +81,32 @@ class GroupCheckData {
   }
 }
 
+class GroupCheckResult {
+  constructor(actor, player, roll) {
+    this._actorId = actor._id;
+    this.actor = {
+      _id: actor._id,
+      name: actor.name,
+      img: actor.img
+    };
+
+    this._playerId = player._id;
+
+    this.roll = roll;
+  }
+
+  static create(actor, player, roll) {
+    return new GroupCheckResult(actor, player, roll);
+  }
+
+  static recreate(data) {
+    let actor = game.actors.get(data._actorId);
+    let player = game.users.get(data._playerId);
+    let roll = Roll.fromData(data.roll);
+    return new GroupCheckResult(actor, player, roll);
+  }
+}
+
 /*
  * When a roll button is clicked:
  * 1. Identify selected tokens
@@ -65,9 +114,9 @@ class GroupCheckData {
  * 3. Update results[] with new rolls
  */
 
-export default class GroupCheck extends ChatMessage {
+export default class GroupCheckCard extends ChatMessage {
   static async create(data, options={}) {
-    data = new GroupCheckData(data);
+    data = GroupCheck.create(data);
     let message = await renderTemplate(`${constants.templateRoot}/chat-card.html`, data);
 
     let messageData = {
@@ -75,8 +124,8 @@ export default class GroupCheck extends ChatMessage {
     };
 
     let messageEntity = await super.create(messageData, options);
-    await messageEntity.setFlag(constants.moduleName, 'isGroupCheck', true);
-    await messageEntity.setFlag(constants.moduleName, 'groupCheckData', data);
+    await messageEntity.setFlag(constants.moduleName, IS_GROUP_CHECK_FLAG, true);
+    await messageEntity.setFlag(constants.moduleName, DATA_FLAG, data);
 
     return messageEntity;
   }
@@ -86,20 +135,18 @@ export default class GroupCheck extends ChatMessage {
     return message;
   }
 
-  static async renderGroupCheck(chatMessage, html, listeners = true) {
-    $(html).addClass('group-check');
-    let data = chatMessage.getFlag(constants.moduleName, 'groupCheckData');
+  static async renderGroupCheck(chatMessage) {
+    const data = GroupCheck.fromMessage(chatMessage);
     if (!data) return;
-
-    // Update data with new results
-
-    let updatedHtml = await renderTemplate(`${constants.templateRoot}/chat-card.html`, data);
-    $(html).find('.group-check-card').html(updatedHtml);
-
-    chatListeners(html);
+  
+    const updatedHtml = await renderTemplate(`${constants.templateRoot}/chat-card.html`, data);
+    chatMessage.update({content: updatedHtml});
+    log('Rendered GroupCheck card')
   }
 
   static async rollCheck(action, actor) {
+    // TODO: Ensure roll hasn't already occurred for this actor
+    // TODO: Allow all types of rolls for current system
     log(`Rolling ${action} for ${actor.name}`);
     let [type, code] = action.split('.');
     return actor.rollSkill(code, {chatMessage: false});
@@ -110,32 +157,46 @@ export default class GroupCheck extends ChatMessage {
 
     const button = event.currentTarget;
     const action = button.dataset.action;
-    const chatMessage = GroupCheck.getForId(
+    const html = button.closest('.group-check');
+    const chatMessage = GroupCheckCard.getForId(
       button.closest('.message').dataset.messageId
     );
     // const userId = game.user._id;
 
     log(`Button clicked with action ${action}`);
 
-    const actors = GroupCheck._getTargetedActors();
-    const roll = await GroupCheck.rollCheck(action, actors[0]);
-    log(`Roll: ${roll.results} = ${roll.total}`);
+    const actors = GroupCheckCard._getTargetedActors();
+    let actorRolls = new Map();
+    const roll = await GroupCheckCard.rollCheck(action, actors[0]);
+    actorRolls.set(actors[0], roll);
+    GroupCheckCard._updateCardWithRolls(chatMessage, html, actorRolls);
+    // log(`Roll: ${roll.results} = ${roll.total}`);
 
     // const rollResults = Promise.allSettled(
-    //   GroupCheck._getTargetedActors().map(actor => {
-    //     GroupCheck.rollCheck(messageId, action, actor)
+    //   GroupCheckCard._getTargetedActors().map(actor => {
+    //     GroupCheckCard.rollCheck(messageId, action, actor)
     //   })
     // ).then(value => {
-    //   GroupCheck._updateCardWithRolls(null, value);
+    //   GroupCheckCard._updateCardWithRolls(null, value);
     // });
 
     button.disabled = false;
   }
 
-  static async _updateCardWithRolls(node, rolls) {
-    for (let roll of rolls) {
-      log(`Roll: ${roll.value}`);
+  static async _updateCardWithRolls(chatMessage, html, actorRolls) {
+    let data = GroupCheck.fromMessage(chatMessage);
+    if (!data) {
+      log('Could not load data for group check');
+      return;
     }
+
+    for (let [actor, roll] of actorRolls) {
+      log(`${actor.name} rolled a ${roll.total}`);
+      data.results[actor._id] = GroupCheckResult.create(actor, game.user, roll);
+    }
+
+    chatMessage.setFlag(constants.moduleName, DATA_FLAG, data);
+    GroupCheckCard.renderGroupCheck(chatMessage);
   };
 
   static _getTargetedActors() {
@@ -149,5 +210,6 @@ export default class GroupCheck extends ChatMessage {
 };
 
 export function chatListeners(html) {
-  html.on('click', '.group-check-buttons button', GroupCheck._onButtonClick);
+  html.off('click', '.group-check-buttons button');
+  html.on('click', '.group-check-buttons button', GroupCheckCard._onButtonClick);
 };

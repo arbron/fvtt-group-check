@@ -20,6 +20,9 @@
   </div>
   <div>
     <h4>{{ localize "GroupCheck.Results" }}</h4>
+    {{#each results as |result|}}
+      {{ result.actor.name }} rolled {{ result.roll.total }}<br><hr>
+    {{/each}}
     {{#if show_average}}
       {{ localize "GroupCheck.Average" }} {{ formattedAverage }}
     {{/if}}

@@ -26,16 +26,6 @@ export default class GroupCheckCommand {
         return false;
       }
     });
-
-    Hooks.on('renderChatMessage', (chatMessage, html, messageData) => {
-      let isGroupCheck = chatMessage.getFlag(constants.moduleName, 'isGroupCheck');
-
-      if (isGroupCheck) {
-        GroupCheck.renderGroupCheck(chatMessage, html);
-
-        return false;
-      }
-    });
   }
 
   static checkCommand(messageText) {
@@ -55,7 +45,7 @@ export default class GroupCheckCommand {
       }
     }
     return GroupCheck.create({
-      checks: parts,
+      check_codes: parts,
       dc: checkDC
     });
   };
