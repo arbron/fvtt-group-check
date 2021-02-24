@@ -5,52 +5,28 @@ import { log, uiError } from './shared/messages.js';
 // - Formula: DM enters roll formula that is rolled for each player
 // - Manual: Players can enter a result manually
 
-// //   average() {
-// //     if (this.result.length == 0) return Number.NAN;
-// // 
-// //     const reducer = ( acc, cur ) => acc + cur.result;
-// //     let total = this.results.reduce(reducer, 0);
-// //     return total / this.result.length;
-// //   }
-// // 
-// //   formattedAverage() {
-// //     let average = this.average();
-// //     if (average == Number.NAN) {
-// //       return 'N/A';
-// //     } else {
-// //       return average;
-// //     }
-// //   }
-
-
-
-/*
- * When a roll button is clicked:
- * 1. Identify selected tokens
- * 2. Roll check for each selected token within the current system
- * 3. Update results[] with new rolls
- */
-
 export default class GroupCheck {
   static async create(data, options={}) {
     data = GroupCheck._prepareData(data);
-    const check_string = data.checks.map(check => game.i18n.localize(check.label)).join(', ');
-    log(`Created Group Check for: ${check_string}`);
 
-    let chatMessage = await ChatMessage.create({}, options);
+    const content = await renderTemplate(`${constants.templateRoot}/chat-card.html`, data);
+    let chatMessage = await ChatMessage.create({content: content}, options);
+
     await chatMessage.setFlag(constants.moduleName, 'isGroupCheck', true);
-    await chatMessage.setFlag(constants.moduleName, 'title', data.title ?? 'Group Check');
+    await chatMessage.setFlag(constants.moduleName, 'title', data.title);
     await chatMessage.setFlag(constants.moduleName, 'description', data.description);
     await chatMessage.setFlag(constants.moduleName, 'checks', data.checks);
     await chatMessage.setFlag(constants.moduleName, 'dc', data.dc);
     await chatMessage.setFlag(constants.moduleName, 'results', {});
 
-    GroupCheck.render(chatMessage);
+    const check_string = data.checks.map(check => game.i18n.localize(check.label)).join(', ');
+    log(`Created Group Check for: ${check_string}`);
 
     return chatMessage;
   }
 
   static _prepareData(data) {
+    data.title = data.title ?? 'Group Check';
     data.checks = data.check_codes.map(code => {
       return game.groupCheck.system.checkDataForAction(code);
     });
@@ -66,10 +42,24 @@ export default class GroupCheck {
       dc:          chatMessage.getFlag(constants.moduleName, 'dc'),
       results:     chatMessage.getFlag(constants.moduleName, 'results')
     };
+    data.average = GroupCheck._average(data.results);
+    data.showAverage = true;
 
     const updatedHtml = await renderTemplate(`${constants.templateRoot}/chat-card.html`, data);
     await chatMessage.update({content: updatedHtml});
   }
+
+  static _average(results={}) {
+    let accumulator = 0;
+    let count = 0;
+    for (let [id, result] of Object.entries(results)) {
+      accumulator += result.roll.total;
+      count += 1;
+    }
+    if (count == 0) return 'N/A';
+    return Math.floor(accumulator / count * 10) / 10;
+  }
+
 
   /*****************************/
   /*      Rolling Checks       */
@@ -155,6 +145,7 @@ export default class GroupCheck {
       roll: roll
     }
   }
+
 
   /*****************************/
   /*   Socket Communication    */

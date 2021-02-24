@@ -1,18 +1,18 @@
 <div class="group-check-card chat-card">
   <header class="card-header">
     <h3 class="check-name">{{ title }}</h3>
-    {{#if dc}}
+    {{#if dc }}
       <h4 class="check-dc">{{ localize "GroupCheck.TargetDC" }} <strong>{{ dc }}</strong></h4>
     {{/if}}
   </header>
   <div class="card-content">
-    {{#if description}}
+    {{#if description }}
       {{ checkDescription }}
     {{/if}}
   </div>
   <hr>
   <div class="group-check-buttons">
-    {{#each checks as |check|}}
+    {{#each checks as |check| }}
       <button data-action="{{ check.action }}">
         {{ localize check.label }}
       </button>
@@ -20,11 +20,11 @@
   </div>
   <div>
     <h4>{{ localize "GroupCheck.Results" }}</h4>
-    {{#each results as |result|}}
+    {{#each results as |result| }}
       {{ result.actor.name }} rolled {{ result.roll.total }}<br><hr>
     {{/each}}
-    {{#if show_average}}
-      {{ localize "GroupCheck.Average" }} {{ formattedAverage }}
+    {{#if showAverage }}
+      {{ localize "GroupCheck.Average" }} {{ average }}
     {{/if}}
   </div>
 </div>
