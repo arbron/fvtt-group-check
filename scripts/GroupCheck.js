@@ -1,5 +1,5 @@
 import constants from './shared/constants.js';
-import { log } from './shared/messages.js';
+import { log, uiError } from './shared/messages.js';
 
 // Generic Check Types:
 // - Formula: DM enters roll formula that is rolled for each player
@@ -154,35 +154,25 @@ export default class GroupCheckCard extends ChatMessage {
     const chatMessage = GroupCheckCard.getForId(
       button.closest('.message').dataset.messageId
     );
-    // const userId = game.user._id;
-
-    // log(`Button clicked with action ${action}`);
 
     const actors = GroupCheckCard._getTargetedActors();
-    let actorRolls = new Map();
-    const roll = await GroupCheckCard.rollCheck(action, actors[0]);
-    actorRolls.set(actors[0], roll);
+    if (!actors) {
+      button.disabled = false;
+      return;
+    }
 
     let rolls = [];
-    for (let [actor, roll] of actorRolls) {
-      rolls.push([actor, roll.toJSON()]);
+    for (let actor of actors) {
+      const roll = await GroupCheckCard.rollCheck(action, actor);
+      if (roll) rolls.push([actor, roll.toJSON()]);
     }
+    // TODO (maybe): Update card after each roll rather than all at once
 
     if (chatMessage.isAuthor) {
       GroupCheckCard._updateCardWithRolls(chatMessage, rolls, game.user.id);
     } else {
       GroupCheckCard._emitRolls(chatMessage._id, rolls);
     }
-
-    // log(`Roll: ${roll.results} = ${roll.total}`);
-
-    // const rollResults = Promise.allSettled(
-    //   GroupCheckCard._getTargetedActors().map(actor => {
-    //     GroupCheckCard.rollCheck(messageId, action, actor)
-    //   })
-    // ).then(value => {
-    //   GroupCheckCard._updateCardWithRolls(null, value);
-    // });
 
     button.disabled = false;
   }
@@ -227,11 +217,14 @@ export default class GroupCheckCard extends ChatMessage {
   };
 
   static _getTargetedActors() {
-    // Retrieve actors for all selected tokens
-    // If no tokens are selected, retrieve user's default actor
-    // If still no actors, throw an error
     let actors = [];
-    actors.push(game.user.character);
+    for (let token of canvas.tokens.controlled) {
+      actors.push(token.actor);
+    }
+    if (actors.length == 0 && game.user.character) actors.push(game.user.character);
+    if (actors.length == 0) {
+      uiError('GroupCheck.NoActorsAvailable', /* toConsole */ false);
+    }
     return actors;
   }
 };
