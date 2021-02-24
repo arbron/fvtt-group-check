@@ -31,23 +31,12 @@ class GroupCheck {
     this.description = data.description;
     this.dc = data.dc;
     this.checks = data.checks ?? [];
-
-    // if (recreate) {
-    //   this.checks = data.checks;
-    //   if (data.results) {
-    //     for (let [actorId, result] of Object.entries(data.results)) {
-    //       this.results[actorId] = GroupCheckResult.recreate(result);
-    //     }
-    //   }
-    // } else {
-    //   this.checks = check_source.filter(check => data.checks.includes(check.name));
-    //   // TODO: Throw an error if any invalid types are provided.
-    //   GroupCheck._log_creation(this.checks);
-    // }
   }
 
   static create(data) {
-    data.checks = check_source.filter(check => data.check_codes.includes(check.name));
+    data.checks = data.check_codes.map(code => {
+      return game.groupCheck.system.checkDataForAction(code);
+    });
     GroupCheck._log_creation(data.checks);
     return new GroupCheck(data);
   }
@@ -76,7 +65,7 @@ class GroupCheck {
 //   }
 
   static _log_creation(checks) {
-    let check_string = checks.map(check => check.label).join(', ');
+    let check_string = checks.map(check => game.i18n.localize(check.label)).join(', ');
     log(`Created Group Check for: ${check_string}`);
   }
 }
@@ -148,15 +137,12 @@ export default class GroupCheckCard extends ChatMessage {
     renderingData.results = results;
     const updatedHtml = await renderTemplate(`${constants.templateRoot}/chat-card.html`, renderingData);
     await chatMessage.update({content: updatedHtml});
-    log('Rendered GroupCheck card')
   }
 
   static async rollCheck(action, actor) {
     // TODO: Ensure roll hasn't already occurred for this actor
-    // TODO: Allow all types of rolls for current system
     log(`Rolling ${action} for ${actor.name}`);
-    let [type, code] = action.split('.');
-    return actor.rollSkill(code, {chatMessage: false});
+    return game.groupCheck.system.rollCheckForActor(action, actor);
   }
 
   static async _onButtonClick(event) {
@@ -170,7 +156,7 @@ export default class GroupCheckCard extends ChatMessage {
     );
     // const userId = game.user._id;
 
-    log(`Button clicked with action ${action}`);
+    // log(`Button clicked with action ${action}`);
 
     const actors = GroupCheckCard._getTargetedActors();
     let actorRolls = new Map();
@@ -210,7 +196,6 @@ export default class GroupCheckCard extends ChatMessage {
         rolls: rolls
       }
     });
-    log('Sent rolls to GM');
   }
 
   static async _receiveRolls(data, userId) {

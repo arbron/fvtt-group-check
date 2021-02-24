@@ -13,8 +13,8 @@
   <hr>
   <div class="group-check-buttons">
     {{#each checks as |check|}}
-      <button data-action="{{ check.type }}.{{ check.name }}">
-        {{ localize check.localization }}
+      <button data-action="{{ check.action }}">
+        {{ localize check.label }}
       </button>
     {{/each}}
   </div>

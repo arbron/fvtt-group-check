@@ -1,5 +1,6 @@
 import constants from './shared/constants.js';
 import { log } from './shared/messages.js';
+import { loadSystem } from './systems/core.js';
 // import registerSettings from './settings.js';
 import GroupCheck from './GroupCheck.js';
 import { chatListeners } from './GroupCheck.js';
@@ -18,16 +19,16 @@ Hooks.on('init', () => {
   GroupCheckCommand.registerCommand();
 
   // Create a namespace within the game global
-  // game.group-check = {
-  //   
-  // };
+  game.groupCheck = {
+    system: undefined
+  };
 
   // registerSettings();
   preloadTemplates();
 });
 
 Hooks.on('setup', () => {
-  log('setup');
+  loadSystem();
 
   Hooks.on('renderChatMessage', (chatMessage, html, messageData) => {
     let isGroupCheck = chatMessage.getFlag(constants.moduleName, 'isGroupCheck');
@@ -49,15 +50,3 @@ Hooks.on('setup', () => {
     }
   });
 });
-
-Hooks.on('ready', () => {
-  log('ready');
-});
-
-// Hooks.on('renderChatLog', () => {
-//   
-// });
-// 
-// Hooks.on('renderChatPopout', () => {
-//   
-// });
