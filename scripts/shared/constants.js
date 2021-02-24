@@ -3,6 +3,7 @@ let constants = {
   moduleLabel: 'Group Check'
 };
 constants.modulePath = `modules/${constants.moduleName}`;
+constants.socket = `module.${constants.moduleName}`;
 constants.templateRoot = `${constants.modulePath}/templates`;
 
 export default constants;

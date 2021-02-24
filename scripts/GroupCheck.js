@@ -169,7 +169,19 @@ export default class GroupCheckCard extends ChatMessage {
     let actorRolls = new Map();
     const roll = await GroupCheckCard.rollCheck(action, actors[0]);
     actorRolls.set(actors[0], roll);
-    GroupCheckCard._updateCardWithRolls(chatMessage, html, actorRolls);
+
+    let rolls = [];
+    for (let [actor, roll] of actorRolls) {
+      rolls.push([actor, roll]);
+    }
+
+    if (chatMessage.isAuthor) {
+      GroupCheckCard._updateCardWithRolls(chatMessage, rolls, game.user.id);
+    } else {
+      GroupCheckCard._emitRolls(chatMessage._id, rolls);
+    }
+
+    // GroupCheckCard._updateCardWithRolls(chatMessage, html, actorRolls);
     // log(`Roll: ${roll.results} = ${roll.total}`);
 
     // const rollResults = Promise.allSettled(
@@ -183,17 +195,42 @@ export default class GroupCheckCard extends ChatMessage {
     button.disabled = false;
   }
 
-  static async _updateCardWithRolls(chatMessage, html, actorRolls) {
+  static async _emitRolls(messageId, rolls) {
+    game.socket.emit(constants.socket, {
+      operation: 'sendActorRolls',
+      user: game.user.id,
+      content: {
+        messageId: messageId,
+        rolls: rolls
+      }
+    });
+    log('Sent rolls to GM');
+  }
+
+  static async _receiveRolls(data, userId) {
+    const chatMessage = game.messages.find(entry => entry._id === data.messageId);
+    if (!chatMessage) {
+      log('Message could not be found');
+      return;
+    }
+    if (!chatMessage.isAuthor) return;
+
+    GroupCheckCard._updateCardWithRolls(chatMessage, data.rolls, userId);
+  }
+
+  static async _updateCardWithRolls(chatMessage, rolls, userId) {
     let data = GroupCheck.fromMessage(chatMessage);
     if (!data) {
       log('Could not load data for group check');
       return;
     }
+    let user = game.users.get(userId);
 
-    for (let [actor, roll] of actorRolls) {
+    for (let [actor, roll] of rolls) {
       log(`${actor.name} rolled a ${roll.total}`);
-      data.results[actor._id] = GroupCheckResult.create(actor, game.user, roll);
+      data.results[actor._id] = GroupCheckResult.create(actor, user, roll);
     }
+    // TODO: Results are not retained on refresh
 
     chatMessage.setFlag(constants.moduleName, DATA_FLAG, data);
     GroupCheckCard.renderGroupCheck(chatMessage);

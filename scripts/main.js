@@ -1,6 +1,7 @@
 import constants from './shared/constants.js';
 import { log } from './shared/messages.js';
 // import registerSettings from './settings.js';
+import GroupCheck from './GroupCheck.js';
 import { chatListeners } from './GroupCheck.js';
 import GroupCheckCommand from './GroupCheckCommand.js';
 
@@ -34,6 +35,17 @@ Hooks.on('setup', () => {
     if (isGroupCheck) {
       chatListeners(html);
       return false;
+    }
+  });
+
+  game.socket.on(constants.socket, (data) => {
+    log('Received socket message');
+    switch (data.operation) {
+      case 'sendActorRolls':
+        GroupCheck._receiveRolls(data.content, data.user);
+        break;
+      default:
+        return;
     }
   });
 });
