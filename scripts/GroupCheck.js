@@ -23,6 +23,7 @@ const check_source = [
 
 const IS_GROUP_CHECK_FLAG = 'isGroupCheck';
 const DATA_FLAG = 'data';
+const RESULTS_FLAG = 'results';
 
 class GroupCheck {
   constructor(data, recreate=false) {
@@ -30,7 +31,6 @@ class GroupCheck {
     this.description = data.description;
     this.dc = data.dc;
     this.checks = data.checks ?? [];
-    this.results = data.results ?? {};
 
     // if (recreate) {
     //   this.checks = data.checks;
@@ -58,22 +58,22 @@ class GroupCheck {
     return new GroupCheck(data);
   }
 
-  average() {
-    if (this.result.length == 0) return Number.NAN;
-
-    const reducer = ( acc, cur ) => acc + cur.result;
-    let total = this.results.reduce(reducer, 0);
-    return total / this.result.length;
-  }
-
-  formattedAverage() {
-    let average = this.average();
-    if (average == Number.NAN) {
-      return 'N/A';
-    } else {
-      return average;
-    }
-  }
+//   average() {
+//     if (this.result.length == 0) return Number.NAN;
+// 
+//     const reducer = ( acc, cur ) => acc + cur.result;
+//     let total = this.results.reduce(reducer, 0);
+//     return total / this.result.length;
+//   }
+// 
+//   formattedAverage() {
+//     let average = this.average();
+//     if (average == Number.NAN) {
+//       return 'N/A';
+//     } else {
+//       return average;
+//     }
+//   }
 
   static _log_creation(checks) {
     let check_string = checks.map(check => check.label).join(', ');
@@ -93,6 +93,9 @@ class GroupCheckResult {
     this._playerId = player._id;
 
     this.roll = roll;
+    if (!this.roll.total) {
+      this.roll.total = roll._total;
+    }
   }
 
   static create(actor, player, roll) {
@@ -126,6 +129,7 @@ export default class GroupCheckCard extends ChatMessage {
     let messageEntity = await super.create(messageData, options);
     await messageEntity.setFlag(constants.moduleName, IS_GROUP_CHECK_FLAG, true);
     await messageEntity.setFlag(constants.moduleName, DATA_FLAG, data);
+    await messageEntity.setFlag(constants.moduleName, RESULTS_FLAG, {});
 
     return messageEntity;
   }
@@ -137,10 +141,13 @@ export default class GroupCheckCard extends ChatMessage {
 
   static async renderGroupCheck(chatMessage) {
     const data = GroupCheck.fromMessage(chatMessage);
+    const results = chatMessage.getFlag(constants.moduleName, RESULTS_FLAG) ?? {};
     if (!data) return;
-  
-    const updatedHtml = await renderTemplate(`${constants.templateRoot}/chat-card.html`, data);
-    chatMessage.update({content: updatedHtml});
+
+    let renderingData = duplicate(data);
+    renderingData.results = results;
+    const updatedHtml = await renderTemplate(`${constants.templateRoot}/chat-card.html`, renderingData);
+    await chatMessage.update({content: updatedHtml});
     log('Rendered GroupCheck card')
   }
 
@@ -172,7 +179,7 @@ export default class GroupCheckCard extends ChatMessage {
 
     let rolls = [];
     for (let [actor, roll] of actorRolls) {
-      rolls.push([actor, roll]);
+      rolls.push([actor, roll.toJSON()]);
     }
 
     if (chatMessage.isAuthor) {
@@ -181,7 +188,6 @@ export default class GroupCheckCard extends ChatMessage {
       GroupCheckCard._emitRolls(chatMessage._id, rolls);
     }
 
-    // GroupCheckCard._updateCardWithRolls(chatMessage, html, actorRolls);
     // log(`Roll: ${roll.results} = ${roll.total}`);
 
     // const rollResults = Promise.allSettled(
@@ -219,8 +225,8 @@ export default class GroupCheckCard extends ChatMessage {
   }
 
   static async _updateCardWithRolls(chatMessage, rolls, userId) {
-    let data = GroupCheck.fromMessage(chatMessage);
-    if (!data) {
+    let results = duplicate(chatMessage.getFlag(constants.moduleName, RESULTS_FLAG));
+    if (!results) {
       log('Could not load data for group check');
       return;
     }
@@ -228,12 +234,11 @@ export default class GroupCheckCard extends ChatMessage {
 
     for (let [actor, roll] of rolls) {
       log(`${actor.name} rolled a ${roll.total}`);
-      data.results[actor._id] = GroupCheckResult.create(actor, user, roll);
+      results[actor._id] = GroupCheckResult.create(actor, user, roll);
     }
-    // TODO: Results are not retained on refresh
 
-    chatMessage.setFlag(constants.moduleName, DATA_FLAG, data);
-    GroupCheckCard.renderGroupCheck(chatMessage);
+    await chatMessage.setFlag(constants.moduleName, RESULTS_FLAG, results);
+    await GroupCheckCard.renderGroupCheck(chatMessage);
   };
 
   static _getTargetedActors() {
