@@ -43,7 +43,7 @@ Hooks.on('setup', () => {
     log('Received socket message');
     switch (data.operation) {
       case 'sendActorRolls':
-        GroupCheck._receiveRolls(data.content, data.user);
+        GroupCheck.receiveRolls(data.content, data.user);
         break;
       default:
         return;

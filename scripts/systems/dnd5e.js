@@ -26,7 +26,7 @@ const check_data = {
   ],
   "skills": [
     "acr", "ani", "arc", "ath", "dec", "his", "ins", "itm", "inv",
-    "med", "nat", "prc", "prf", "per", "rel", "sit", "ste", "sur"
+    "med", "nat", "prc", "prf", "per", "rel", "slt", "ste", "sur"
   ]
   // TODO: Add tool checks
   // TODO: Add support for custom skills
@@ -69,6 +69,8 @@ export default class SystemDnD5e extends BaseSystem {
       return actor.rollAbilityTest(code, {chatMessage: displayChatMessage});
     } else if (type == Types.ABILITY) {
       return actor.rollAbilitySave(code, {chatMessage: displayChatMessage});
+    } else {
+      return super.rollCheckForActor(action, actor, displayChatMessage);
     }
   }
 
