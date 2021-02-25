@@ -9,7 +9,8 @@
       "url": "https://moviemaps.org",
       "email": "jeff@szed.co",
       "discord": "arbron#6515",
-      "twitter": "@arbron"
+      "twitter": "@arbron",
+      "ko-fi": "arbron"
     }
   ],
   "url": "https://github.com/arbron/fvtt-group-check",
@@ -18,10 +19,11 @@
   "readme": "",
   "changelog": "",
   "bugs": "https://github.com/arbron/fvtt-group-check/issues",
+  "allowBugReporter": true,
   "version": "0.0.1",
   "minimumCoreVersion": "0.7.0",
   "compatibleCoreVersion": "0.7.9",
-  "manifestPlusVersion": "1.0.0",
+  "manifestPlusVersion": "1.1.0",
   "socket": true,
   "esmodules": [
     "./scripts/main.js"
