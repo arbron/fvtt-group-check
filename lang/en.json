@@ -5,6 +5,11 @@
   "GroupCheck.Results": "Results",
   "GroupCheck.TargetDC": "Target DC:",
 
+  "GroupCheck.CreateCheck": "Call Group Check",
+  "GroupCheck.Form.Title": "Title",
+  "GroupCheck.Form.Description": "Description",
+  "GroupCheck.Form.Submit": "Call Check",
+
   "GroupCheck.NoActorsAvailable": "No actors available to roll check. Select one or more tokens in the current scene or assign a character to user and roll again.",
 
   "GroupCheck.DND5E.ActionSkil": "Skill Check"

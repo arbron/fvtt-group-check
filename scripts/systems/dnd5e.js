@@ -41,9 +41,9 @@ export default class SystemDnD5e extends BaseSystem {
     return [Types.SKILL, Types.SAVE, Types.ABILITY].map(type => {
       return {
         type: type,
-        label: SystemDnD5e._localizationCodeForType(type),
+        label: SystemDnD5e._localizedLabelForType(type),
         checks: check_data[Types.sourceFor(type)].map(code => {
-          SystemDnD5e._checkDataForCode(type, code);
+          return SystemDnD5e._checkDataForCode(type, code);
         })
       };
     });
@@ -57,7 +57,8 @@ export default class SystemDnD5e extends BaseSystem {
   static _checkDataForCode(type, code) {
     return {
       "action": `${type}.${code}`,
-      "label": SystemDnD5e._localizationCodeForCheck(type, code)
+      "label": SystemDnD5e._localizedLabelForCheck(type, code),
+      "buttonLabel": SystemDnD5e._buttonLabel(type, code)
     };
   }
 
@@ -81,19 +82,34 @@ export default class SystemDnD5e extends BaseSystem {
     return [type, code];
   }
 
-  static _localizationCodeForType(type) {
+  static _localizedLabelForType(type) {
     if (type == Types.SKILL) {
-      return `GroupCheck.DND5E.ActionSkil`;
+      return game.i18n.localize('GroupCheck.DND5E.ActionSkil');
     } else if (type == Types.SAVE) {
-      return `DND5E.ActionSave`;
+      return game.i18n.localize('DND5E.ActionSave');
     } else {
-      return `DND5E.ActionAbil`;
+      return game.i18n.localize('DND5E.ActionAbil');
     }
   }
 
-  static _localizationCodeForCheck(type, code) {
+  static _buttonLabel(type, code) {
+    switch (type) {
+      case Types.SKILL:
+        return SystemDnD5e._localizedLabelForCheck(type, code);
+      case Types.SAVE:
+        return game.i18n.format('DND5E.SavePromptTitle', {
+          ability: SystemDnD5e._localizedLabelForCheck(type, code)
+        });
+      case Types.ABILITY:
+        return game.i18n.format('DND5E.AbilityPromptTitle', {
+          ability: SystemDnD5e._localizedLabelForCheck(type, code)
+        });
+    }
+  }
+
+  static _localizedLabelForCheck(type, code) {
     let prefix = Types.localizationPrefixFor(type);
     let formattedCode = code.charAt(0).toUpperCase() + code.slice(1).toLowerCase();
-    return `DND5E.${prefix}${formattedCode}`;
+    return game.i18n.localize(`DND5E.${prefix}${formattedCode}`);
   }
 }

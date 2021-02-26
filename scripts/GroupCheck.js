@@ -19,7 +19,7 @@ export default class GroupCheck {
     await chatMessage.setFlag(constants.moduleName, 'dc', data.dc);
     await chatMessage.setFlag(constants.moduleName, 'results', {});
 
-    const check_string = data.checks.map(check => game.i18n.localize(check.label)).join(', ');
+    const check_string = data.checks.map(check => check.label).join(', ');
     log(`Created Group Check for: ${check_string}`);
 
     return chatMessage;

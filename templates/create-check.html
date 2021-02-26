@@ -1,0 +1,30 @@
+<form autocomplete="off">
+  <div class="form-group">
+    <label>{{ localize "GroupCheck.Form.Title" }}</label>
+    <div class="form-fields">
+      <input type="text" name="title" data-dtype="String" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>{{ localize "GroupCheck.Form.Description" }}</label>
+    <div class="form-fields">
+      <textarea name="description"></textarea>
+    </div>
+  </div>
+
+  {{#each sections as |section| }}
+    <h3>{{ section.label }}</h3>
+    {{#each section.checks as |check| }}
+      <label class="checkbox">
+        {{ check.label }}
+        <input type="checkbox" name="action-{{ check.action }}" value="0" data-dtype="Boolean" />
+      </label>
+    {{/each}}
+  {{/each}}
+
+  <!-- Form Submission -->
+  <button type="submit" name="submit">
+      <i class="far fa-save"></i> {{ localize "GroupCheck.Form.Submit" }}
+  </button>
+</form>

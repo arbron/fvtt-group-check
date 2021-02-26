@@ -1,5 +1,6 @@
 import constants from './shared/constants.js';
 import { log } from './shared/messages.js';
+import { CreateGroupCheck } from './CreateGroupCheck.js';
 import GroupCheck from './GroupCheck.js';
 
 /*
@@ -21,7 +22,12 @@ export default class GroupCheckCommand {
         let content = messageText.replace(match[1], '');
 
         log(`Chat command received: "${content}"`);
-        this.createGroupCheck(content);
+
+        if (content == 'CREATE') {
+          new CreateGroupCheck().render(true);
+        } else {
+          this.createGroupCheck(content);
+        }
 
         return false;
       }

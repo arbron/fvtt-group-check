@@ -5,16 +5,16 @@
       <h4 class="check-dc">{{ localize "GroupCheck.TargetDC" }} <strong>{{ dc }}</strong></h4>
     {{/if}}
   </header>
-  <div class="card-content">
-    {{#if description }}
-      {{ checkDescription }}
-    {{/if}}
-  </div>
+  {{#if description }}
+    <div class="card-content">
+        {{ description }}
+    </div>
+  {{/if}}
   <hr>
   <div class="group-check-buttons">
     {{#each checks as |check| }}
       <button data-action="{{ check.action }}">
-        {{ localize check.label }}
+        {{ check.buttonLabel }}
       </button>
     {{/each}}
   </div>
