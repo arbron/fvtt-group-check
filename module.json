@@ -1,11 +1,11 @@
 {
   "name": "arbron-group-check",
-  "title": "Arbron's Group Check",
+  "title": "Arbron’s Group Check",
   "description": "Request a group skill check from the player and keep track of the results in one chat bubble.",
-  "author": "Jeff 'Arbron' Hitchcock",
+  "author": "Jeff ‘Arbron’ Hitchcock",
   "authors": [
     {
-      "name": "Jeff 'Arbron' Hitchcock",
+      "name": "Jeff ‘Arbron’ Hitchcock",
       "url": "https://moviemaps.org",
       "email": "jeff@szed.co",
       "discord": "arbron#6515",
@@ -14,15 +14,15 @@
     }
   ],
   "url": "https://github.com/arbron/fvtt-group-check",
-  "manifest": "https://raw.githubusercontent.com/arbron/fvtt-group-check/main/module.json",
+  "manifest": "",
   "download": "",
-  "readme": "",
-  "changelog": "",
+  "readme": "https://raw.githubusercontent.com/arbron/fvtt-group-check/main/readme.md",
+  "changelog": "https://raw.githubusercontent.com/arbron/fvtt-group-check/main/changelog.md",
   "bugs": "https://github.com/arbron/fvtt-group-check/issues",
   "allowBugReporter": true,
   "version": "0.0.1",
-  "minimumCoreVersion": "0.7.0",
-  "compatibleCoreVersion": "0.7.9",
+  "minimumCoreVersion": "0.7.9",
+  "compatibleCoreVersion": "0.8.6",
   "manifestPlusVersion": "1.1.0",
   "socket": true,
   "esmodules": [
